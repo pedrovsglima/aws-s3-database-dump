@@ -1,0 +1,39 @@
+version: '3.1'
+
+services:
+  database:
+    image: mariadb
+    container_name: database
+    hostname: database
+    environment:
+      - MARIADB_ROOT_PASSWORD=cesar
+      - MARIADB_DATABASE=FACULDADE
+    volumes:
+      - ./db_data/FACULDADE.sql:/docker-entrypoint-initdb.d/FACULDADE.sql
+
+  dump:
+    image: mysql-client
+    container_name: dump
+    hostname: dump
+    environment:
+      - MARIADB_ROOT_PASSWORD=cesar
+    depends_on:
+      - database
+    volumes:
+      - ./dumps/:/dumps/
+      - ./scripts/database_dump.sh:/database_dump.sh
+      - ./logs/:/logs/
+    command:
+      - ./database_dump.sh
+
+  send-to-s3:
+    image: python-s3
+    container_name: send-to-s3
+    hostname: send-to-s3
+    depends_on:
+      - dump
+    volumes:
+      - ./dumps/:/dumps/
+      - ../credentials.txt:/credentials.txt
+      - ./scripts/send-to-s3.py:/bin/send-to-s3.py
+      - ./logs/:/logs/
