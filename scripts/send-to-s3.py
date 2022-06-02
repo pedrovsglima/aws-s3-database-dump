@@ -37,7 +37,7 @@ class AWSobjectWrapper:
         with open(log_file, 'a+') as file:
             file.write(f"{current_date},{current_hour},{message}\n")
     
-    def uploadDumpFile(self, source_file):
+    def upload_dump_file(self, source_file):
         self.count_files_in_folder()
 
         try:
@@ -63,11 +63,11 @@ def main():
                   aws_access_key_id=KEY_ID,
                   aws_secret_access_key=ACCESS_KEY)
     
-    sendDumpFile = AWSobjectWrapper(s3)
+    send_dump_file = AWSobjectWrapper(s3)
 
-    sendDumpFile.create_bucket_if_necessary(BUCKET_NAME)     
+    send_dump_file.create_bucket_if_necessary(BUCKET_NAME)     
 
-    sendDumpFile.uploadDumpFile(DUMP_FILE)
+    send_dump_file.upload_dump_file(DUMP_FILE)
 
 
 if __name__ == '__main__':
