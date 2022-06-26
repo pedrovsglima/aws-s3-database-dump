@@ -1,0 +1,66 @@
+<h1 id="extra-o-de-dados-e-envio-autom-tico-para-nuvem-aws-s3-">Extração de dados e Envio automático para nuvem (AWS S3)</h1>
+<p>Atividade proposta durante a participação na trilha de Engenharia de Dados do Programa de Formação em Dados Encantech, realizado durante os meses de Março, Abril e Maio de 2022, em uma parceria entre as Lojas Renner S.A. e a CESAR School. </p>
+<p>Consiste na construção de uma pipeline com estágios de extração de dados e de carregamento automático na nuvem (bucket do AWS S3).</p>
+<h2 id="overview">Overview</h2>
+<p>A ideia é simular o armazenamento na nuvem de backups de um banco de dados em funcionamento. </p>
+<ol>
+<li><p>O usuário realiza o dump no banco de dados quando achar mais pertinente (ex: horário em que ninguém esteja acessando o banco de dados); </p>
+</li>
+<li><p>Em paralelo, um serviço verifica periodicamente a existência do arquivo resultante do dump: </p>
+<ul>
+<li><p>Se houver arquivo, este é carregado em um bucket do AWS S3;</p>
+</li>
+<li><p>Se não houver arquivo, registra-se a tentativa no arquivo de log e nada mais é executado.</p>
+</li>
+</ul>
+</li>
+</ol>
+<h3 id="pontos-de-aten-o-">Pontos de atenção:</h3>
+<ul>
+<li><p>Arquivo resultante do dump no banco de dados: existe uma pasta compartilhada entre o docker responsável pelo dump no banco de dados e o docker responsável pelo envio deste arquivo para a nuvem. Os seguintes cenários são possíveis:</p>
+<ol>
+<li><p>Dump realizado e pasta vazia: armazena o arquivo na pasta;</p>
+</li>
+<li><p>Dump realizado e pasta cheia: sobrescreve o arquivo antigo;</p>
+</li>
+<li><p>Pasta com arquivo e tentativa de envio para nuvem: envia o arquivo e o exclui da pasta compartilhada;</p>
+</li>
+<li><p>Pasta sem arquivo e tentativa de envio para nuvem: nada é executado.</p>
+</li>
+</ol>
+</li>
+<li><p>Armazenamento na nuvem: pastas divididas por data.</p>
+<ul>
+<li>Mais de um dump na mesma data: adiciona-se um índice no final do nome do arquivo.</li>
+</ul>
+</li>
+<li><p>Periodicidade de envio para nuvem: editar o arquivo de agendamento <a href="https://github.com/peuvitor/aws-s3-database-dump/blob/main/dockerfiles/python/crontab">crontab</a>, vinculado ao Dockerfile. Pensando apenas na implementação deste projeto, definiu-se um período de 1 minuto.</p>
+</li>
+</ul>
+<p>Resumo do funcionamento:</p>
+<p align="center">
+  <img src="https://github.com/peuvitor/aws-s3-database-dump/blob/main/images/pipeline.png">
+</p>
+
+<h2 id="arquivo-de-log">Arquivo de log</h2>
+<p><code>&lt;data&gt;,&lt;hora&gt;,&lt;mensagem&gt;</code></p>
+<p>\<mensagem\> pode ser:</p>
+<ul>
+<li><p><em>database dump completed</em> - dump no banco de dados finalizado;</p>
+</li>
+<li><p><em>there is no file to upload</em> - tentativa de envio do arquivo de dump para nuvem, porém a pasta encontra-se vazia;</p>
+</li>
+<li><p><em>file successfully uploaded</em> - arquivo de dump enviado para o respectivo bucket do AWS S3;</p>
+</li>
+<li><p>erro apresentado ao tentar enviar arquivo para a nuvem (retorno da cláusula except). </p>
+</li>
+</ul>
+<p>Exemplo:</p>
+<p align="center">
+  <img src="https://github.com/peuvitor/aws-s3-database-dump/blob/main/images/log-file-example.PNG">
+</p>
+
+<h2 id="seguran-a-credenciais-da-aws">Segurança - Credenciais da AWS</h2>
+<p>Para usar a AWS com o boto3 (o AWS SDK para Python) é necessário indicar as chaves de acesso do seu usuário (&#39;Access key ID&#39; e &#39;Secret access key&#39;). Por segurança, estas chaves não devem ser compartilhadas com ninguém. </p>
+<p>Além disso, outra informação levada em conta para esta seção é que o nome do bucket escolhido no projeto é único (cada nome de bucket deve ser exclusivo em todas as contas da AWS em todas as regiões da AWS em uma partição).</p>
+<p>A abordagem escolhida foi a de registrar essas três informações (Access key ID, Secret access key e nome do bucket) em um único arquivo fora do repositório deste projeto. Em uma tentativa de execução, se faz necessário a criação deste arquivo com suas próprias credenciais. </p>
