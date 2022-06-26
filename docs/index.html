@@ -16,6 +16,7 @@
 </ul>
 </li>
 </ol>
+<p><img src="https://github.com/peuvitor/aws-s3-database-dump/blob/main/images/pipeline.png?raw=true" class="center"></p>
 <h3 id="pontos-de-aten-o-">Pontos de atenção:</h3>
 <ul>
 <li><p>Arquivo resultante do dump no banco de dados: existe uma pasta compartilhada entre o docker responsável pelo dump no banco de dados e o docker responsável pelo envio deste arquivo para a nuvem. Os seguintes cenários são possíveis:</p>
@@ -38,8 +39,6 @@
 <li><p>Periodicidade de envio para nuvem: editar o arquivo de agendamento <a href="https://github.com/peuvitor/aws-s3-database-dump/blob/main/dockerfiles/python/crontab">crontab</a>, vinculado ao Dockerfile. Pensando apenas na implementação deste projeto, definiu-se um período de 1 minuto.</p>
 </li>
 </ul>
-<p>Resumo do funcionamento:</p>
-<p><img src="https://github.com/peuvitor/aws-s3-database-dump/blob/main/images/pipeline.png?raw=true" class="center"></p>
 
 <h2 id="arquivo-de-log">Arquivo de log</h2>
 <p><code>&lt;data&gt;,&lt;hora&gt;,&lt;mensagem&gt;</code></p>
